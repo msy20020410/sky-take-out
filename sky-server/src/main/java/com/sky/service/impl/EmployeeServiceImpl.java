@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import cn.hutool.crypto.digest.DigestUtil;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.EmployeeLoginDTO;
@@ -39,7 +40,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         //密码比对
-        // TODO 后期需要进行md5加密，然后再进行比对
+        // 将前端传递的明文密码转换为数据库中的md5密文
+        password = DigestUtil.md5Hex(password.getBytes());
         if (!password.equals(employee.getPassword())) {
             //密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);

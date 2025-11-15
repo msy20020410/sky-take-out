@@ -25,7 +25,7 @@ logging:
   level:
     com:
       sky:
-        mapper: debug
+        mapper: trace
         service: info
         controller: info
 
