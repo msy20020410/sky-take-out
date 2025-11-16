@@ -13,13 +13,27 @@ spring:
       username: ${sky.datasource.username}
       password: ${sky.datasource.password}
 
-mybatis:
-  #mapper配置文件
-  mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.sky.entity
+mybatis-plus:
+  # 1. 通用配置
   configuration:
-    #开启驼峰命名
-    map-underscore-to-camel-case: true
+    map-underscore-to-camel-case: true     # 开启驼峰映射 user_name → userName
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印 SQL（开发阶段常用）
+
+  # 2. 全局配置
+  global-config:
+    banner: false                          # 关闭启动 banner
+    db-config:
+      id-type: auto                        # 主键策略：数据库自增
+      logic-delete-field: deleted          # 逻辑删除字段
+      logic-delete-value: 1                # 已删除值
+      logic-not-delete-value: 0            # 未删除值
+
+  # 3. Mapper XML 位置
+  mapper-locations: classpath*:mapper/**/*.xml
+
+  # 4. 别名包
+  type-aliases-package: com.sky.entity
+
 
 logging:
   level:
