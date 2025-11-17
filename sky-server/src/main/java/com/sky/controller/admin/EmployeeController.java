@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -84,6 +85,13 @@ public class EmployeeController {
     @PostMapping
     public Result<String> add(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
         log.info("新增员工：{}", employeeLoginDTO);
+
+        // 校验用户名是否唯一
+        List<Employee> employeeList = employeeService.lambdaQuery()
+                .eq(Employee::getUsername, employeeLoginDTO.getUsername()).list();
+        if (employeeList != null && employeeList.size() > 0) {
+            return Result.error("用户名已存在！");
+        }
         // 将dto转为entity
         Employee employee = new Employee();
         BeanUtil.copyProperties(employeeLoginDTO, employee);
