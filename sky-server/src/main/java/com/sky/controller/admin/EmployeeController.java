@@ -2,21 +2,22 @@ package com.sky.controller.admin;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeLoginDTO;
+import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.properties.JwtProperties;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.utils.JwtUtil;
 import com.sky.vo.EmployeeLoginVO;
+import com.sky.vo.PageResult;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.statement.select.Select;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -90,7 +91,7 @@ public class EmployeeController {
         List<Employee> employeeList = employeeService.lambdaQuery()
                 .eq(Employee::getUsername, employeeLoginDTO.getUsername()).list();
         if (employeeList != null && employeeList.size() > 0) {
-            return Result.error("用户名已存在！");
+            throw new RuntimeException("用户名已存在！");
         }
         // 将dto转为entity
         Employee employee = new Employee();
@@ -104,4 +105,26 @@ public class EmployeeController {
         return Result.success("新增成功！");
     }
 
+    /**
+     * 分页查询
+     *
+     * @param employeePageQueryDTO
+     * @return
+     */
+    @GetMapping("/page")
+    public Result page(EmployeePageQueryDTO employeePageQueryDTO) {
+        // 给姓名添加默认值
+        if (employeePageQueryDTO.getName() == null) {
+            employeePageQueryDTO.setName("");
+        }
+
+        // 创建分页对象
+        Page<Employee> page = new Page<>(employeePageQueryDTO.getPage(), employeePageQueryDTO.getPageSize());
+        // 查询
+        Page<Employee> employeePage = employeeService.lambdaQuery()
+                .like(Employee::getName, employeePageQueryDTO.getName())
+                .page(page);
+
+        return Result.success(PageResult.of(employeePage.getTotal(), employeePage.getRecords()));
+    }
 }
