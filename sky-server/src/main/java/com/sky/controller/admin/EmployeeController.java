@@ -2,6 +2,7 @@ package com.sky.controller.admin;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeLoginDTO;
@@ -126,5 +127,45 @@ public class EmployeeController {
                 .page(page);
 
         return Result.success(PageResult.of(employeePage.getTotal(), employeePage.getRecords()));
+    }
+
+    /**
+     * 启用禁用员工账号
+     *
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    public Result<String> startOrStop(@PathVariable Integer status, Long id) {
+        employeeService.lambdaUpdate()
+                .eq(Employee::getId, id)
+                .set(Employee::getStatus, status)
+                .update();
+        return Result.success("状态修改成功！");
+    }
+
+    /**
+     * 编辑员工信息
+     *
+     * @param employeeLoginDTO
+     * @return
+     */
+    @PutMapping
+    public Result<String> update(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
+        // TODO 前端现在端没有传员工id，暂时根据用户名称（唯一的）查询拿到id
+        Employee tmp = employeeService.lambdaQuery()
+                .eq(Employee::getUsername, employeeLoginDTO.getUsername())
+                .one();
+        // 执行更新
+        Employee employee = Employee.builder()
+                .idNumber(employeeLoginDTO.getIdNumber())
+                .name(employeeLoginDTO.getName())
+                .phone(employeeLoginDTO.getPhone())
+                .sex(employeeLoginDTO.getSex())
+                .username(employeeLoginDTO.getUsername())
+                .build();
+        employeeService.update(employee, new UpdateWrapper<Employee>().eq("id", tmp.getId()));
+        return Result.success("员工信息修改成功！");
     }
 }
