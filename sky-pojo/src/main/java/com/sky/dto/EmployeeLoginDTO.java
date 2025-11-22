@@ -33,4 +33,13 @@ public class EmployeeLoginDTO implements Serializable {
 
     @ApiModelProperty("状态")
     private Integer status;
+
+    @ApiModelProperty("修改密码员工id参数")
+    private Integer empId;
+
+    @ApiModelProperty("旧密码")
+    private String oldPassword;
+
+    @ApiModelProperty("新密码")
+    private String newPassword;
 }

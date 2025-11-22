@@ -8,15 +8,16 @@ import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
+import com.sky.exception.BaseException;
 import com.sky.properties.JwtProperties;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.utils.JwtUtil;
+import com.sky.utils.UserContext;
 import com.sky.vo.EmployeeLoginVO;
 import com.sky.vo.PageResult;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.statement.select.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -175,5 +176,26 @@ public class EmployeeController {
                 .build();
         employeeService.update(employee, new UpdateWrapper<Employee>().eq("id", employeeLoginDTO.getId()));
         return Result.success("员工信息修改成功！");
+    }
+
+    @PutMapping("/editPassword")
+    public Result<String> editPassword(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
+        // TODO 由于前端页面没有传递员工id 所以只能自己获取 获取当前登录用户的id
+        Long empId = UserContext.getCurrentUser();
+        // TODO 适配接口文档的empId参数
+        employeeLoginDTO.setEmpId(Math.toIntExact(empId));
+        Employee employee = employeeService.lambdaQuery()
+                .eq(Employee::getId, employeeLoginDTO.getEmpId())
+                .one();
+        // 校验旧密码是否有误
+        if (!employee.getPassword().equals(DigestUtil.md5Hex(employeeLoginDTO.getOldPassword()))) {
+            throw new BaseException("旧密码输入有误！");
+        }
+        // 设置新密码
+        employeeService.lambdaUpdate()
+                .eq(Employee::getId, employeeLoginDTO.getEmpId())
+                .set(Employee::getPassword, DigestUtil.md5Hex(employeeLoginDTO.getNewPassword()))
+                .update();
+        return Result.success("密码修改成功！");
     }
 }
