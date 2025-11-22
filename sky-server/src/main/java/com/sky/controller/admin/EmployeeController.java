@@ -178,6 +178,12 @@ public class EmployeeController {
         return Result.success("员工信息修改成功！");
     }
 
+    /**
+     * 修改员工密码
+     *
+     * @param employeeLoginDTO
+     * @return
+     */
     @PutMapping("/editPassword")
     public Result<String> editPassword(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
         // TODO 由于前端页面没有传递员工id 所以只能自己获取 获取当前登录用户的id
