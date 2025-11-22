@@ -146,6 +146,19 @@ public class EmployeeController {
     }
 
     /**
+     * 根据id查询员工信息
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result<Employee> getById(@PathVariable Long id) {
+        Employee employee = employeeService.getById(id);
+        return Result.success(employee);
+    }
+
+
+    /**
      * 编辑员工信息
      *
      * @param employeeLoginDTO
@@ -153,11 +166,6 @@ public class EmployeeController {
      */
     @PutMapping
     public Result<String> update(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
-        // TODO 前端现在端没有传员工id，暂时根据用户名称（唯一的）查询拿到id
-        Employee tmp = employeeService.lambdaQuery()
-                .eq(Employee::getUsername, employeeLoginDTO.getUsername())
-                .one();
-        // 执行更新
         Employee employee = Employee.builder()
                 .idNumber(employeeLoginDTO.getIdNumber())
                 .name(employeeLoginDTO.getName())
@@ -165,7 +173,7 @@ public class EmployeeController {
                 .sex(employeeLoginDTO.getSex())
                 .username(employeeLoginDTO.getUsername())
                 .build();
-        employeeService.update(employee, new UpdateWrapper<Employee>().eq("id", tmp.getId()));
+        employeeService.update(employee, new UpdateWrapper<Employee>().eq("id", employeeLoginDTO.getId()));
         return Result.success("员工信息修改成功！");
     }
 }
