@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.entity.Employee;
@@ -64,5 +65,22 @@ public class CategoryController {
                 .set(Category::getStatus, status)
                 .update();
         return Result.success("操作成功！");
+    }
+
+    /**
+     * 编辑分类
+     *
+     * @param dto
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody CategoryDTO dto) {
+        categoryService.lambdaUpdate()
+                .eq(Category::getId, dto.getId())
+                .set(Category::getType, dto.getType())
+                .set(Category::getSort, dto.getSort())
+                .set(Category::getName, dto.getName())
+                .update();
+        return Result.success("修改成功！");
     }
 }
