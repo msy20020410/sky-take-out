@@ -1,5 +1,8 @@
 package com.sky.controller.admin;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
@@ -14,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.awt.image.Kernel;
+import java.util.List;
 
 /**
  * @ClassName CategoryController
@@ -75,12 +80,44 @@ public class CategoryController {
      */
     @PutMapping
     public Result update(@RequestBody CategoryDTO dto) {
-        categoryService.lambdaUpdate()
+        // 由于前端没有传递必填的type参数，所以只能自己查
+        Category categoryEntity = categoryService.lambdaQuery()
                 .eq(Category::getId, dto.getId())
-                .set(Category::getType, dto.getType())
-                .set(Category::getSort, dto.getSort())
-                .set(Category::getName, dto.getName())
-                .update();
+                .one();
+        // 将原来的分类设置进去
+        Category category = new Category();
+        BeanUtil.copyProperties(dto, category);
+        category.setType(categoryEntity.getType());
+        categoryService.update(category, new LambdaUpdateWrapper<Category>().eq(Category::getId, dto.getId()));
         return Result.success("修改成功！");
+    }
+
+    /**
+     * 新增分类
+     *
+     * @param dto
+     * @return
+     */
+    @PostMapping
+    public Result add(@RequestBody CategoryDTO dto) {
+        Category category = new Category();
+        BeanUtil.copyProperties(dto, category);
+        category.setStatus(1);
+        categoryService.save(category);
+        return Result.success("操作成功！");
+    }
+
+    /**
+     * 根据type查询分类
+     *
+     * @param type
+     * @return
+     */
+    @GetMapping("/list")
+    public Result<List<Category>> list(String type) {
+        List<Category> list = categoryService.lambdaQuery()
+                .eq(type != null, Category::getType, type)
+                .list();
+        return Result.success(list);
     }
 }
