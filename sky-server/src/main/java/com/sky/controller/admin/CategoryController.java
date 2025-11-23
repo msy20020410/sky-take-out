@@ -10,9 +10,7 @@ import com.sky.service.CategoryService;
 import com.sky.vo.PageResult;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -49,5 +47,22 @@ public class CategoryController {
                 .page(page);
         return Result.success(PageResult.of(res.getTotal(), res.getRecords()));
 
+    }
+
+
+    /**
+     * 启用禁用分类
+     *
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    public Result startOrStop(@PathVariable Integer status, Long id) {
+        categoryService.lambdaUpdate()
+                .eq(Category::getId, id)
+                .set(Category::getStatus, status)
+                .update();
+        return Result.success("操作成功！");
     }
 }
