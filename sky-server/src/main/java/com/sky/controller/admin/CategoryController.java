@@ -120,4 +120,16 @@ public class CategoryController {
                 .list();
         return Result.success(list);
     }
+
+    /**
+     * 根据id删除分类
+     *
+     * @param id
+     * @return
+     */
+    @DeleteMapping
+    public Result delete(String id) {
+        categoryService.removeById(id);
+        return Result.success("删除成功！");
+    }
 }
