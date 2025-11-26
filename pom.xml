@@ -33,6 +33,7 @@
         <jaxb-api>2.3.1</jaxb-api>
         <poi>3.16</poi>
         <mybatis.plus>3.5.3.1</mybatis.plus>
+        <minio.version>8.5.2</minio.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -141,6 +142,12 @@
                 <artifactId>jsqlparser</artifactId>
                 <version>4.6</version>
             </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 </project>
