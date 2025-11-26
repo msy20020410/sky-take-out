@@ -17,7 +17,7 @@ public class CommonController {
     private MinioService minioService;
 
     @PostMapping("/upload")
-    public String upload(@RequestPart("file") MultipartFile file) throws Exception {
+    public String upload(MultipartFile file) throws Exception {
         return minioService.upload(file);
     }
 }

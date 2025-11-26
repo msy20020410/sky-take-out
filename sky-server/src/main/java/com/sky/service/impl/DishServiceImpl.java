@@ -1,18 +1,26 @@
 package com.sky.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sky.dto.DishDTO;
+import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.mapper.DishMapper;
+import com.sky.result.PageResult;
+import com.sky.result.Result;
 import com.sky.service.CategoryService;
 import com.sky.service.DishFlavorService;
 import com.sky.service.DishService;
+import com.sky.vo.DishVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,8 +73,8 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         if (flavorList != null && !flavorList.isEmpty()) {
             DishFlavor dishFlavor = new DishFlavor();
             for (DishFlavor flavor : flavorList) {
-                    // 这里要在实体表进行注解配置，才能拿到自增的id
-                    dishFlavor.setDishId(dish.getId());
+                // 这里要在实体表进行注解配置，才能拿到自增的id
+                dishFlavor.setDishId(dish.getId());
                 if (flavor.getId() != null) {
                     dishFlavor.setDishId(flavor.getId());
                 }
@@ -75,5 +83,40 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
                 dishFlavorService.save(dishFlavor);
             }
         }
+    }
+
+    @Override
+    public PageResult pageQuery(DishPageQueryDTO dto) {
+        // 开启分页
+        Page<Dish> page = new Page<>(dto.getPage(), dto.getPageSize());
+        // 构造查询条件
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        if (dto.getCategoryId() != null) {
+            queryWrapper.eq(Dish::getCategoryId, dto.getCategoryId());
+        }
+        if (dto.getName() != null) {
+            queryWrapper.like(Dish::getName, dto.getName());
+        }
+        if (dto.getStatus() != null) {
+            queryWrapper.eq(Dish::getStatus, dto.getStatus());
+        }
+        // 分页查询菜品信息
+        Page<Dish> dishPage = dishMapper.selectPage(page, queryWrapper);
+        List<Dish> records = dishPage.getRecords();
+        // 查询分类名称,并封装结果
+        List<DishVO> res = new ArrayList<>();
+        records.forEach(dish -> {
+            Category category = categoryService.lambdaQuery()
+                    .eq(Category::getId, dish.getCategoryId())
+                    .one();
+            DishVO dishVO = new DishVO();
+            BeanUtil.copyProperties(dish, dishVO);
+            dishVO.setCategoryName(category.getName());
+            res.add(dishVO);
+        });
+        return PageResult.builder()
+                .total(dishPage.getTotal())
+                .records(res)
+                .build();
     }
 }

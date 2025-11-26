@@ -2,7 +2,13 @@ package com.sky.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sky.dto.DishDTO;
+import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
+import com.sky.result.PageResult;
+import com.sky.result.Result;
+import com.sky.vo.DishVO;
+
+import java.util.List;
 
 /**
  * @InterfaceName DishService
@@ -12,4 +18,6 @@ import com.sky.entity.Dish;
  */
 public interface DishService extends IService<Dish> {
     void addWithFlavor(DishDTO dto);
+
+    PageResult pageQuery(DishPageQueryDTO dto);
 }
