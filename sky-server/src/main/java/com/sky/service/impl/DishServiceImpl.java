@@ -1,7 +1,9 @@
 package com.sky.service.impl;
 
+import cn.hutool.core.bean.BeanException;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -10,12 +12,15 @@ import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.entity.SetmealDish;
+import com.sky.exception.BaseException;
 import com.sky.mapper.DishMapper;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
 import com.sky.service.DishFlavorService;
 import com.sky.service.DishService;
+import com.sky.service.SetmealDishService;
 import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,6 +47,8 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     private DishFlavorService dishFlavorService;
     @Resource
     private CategoryService categoryService;
+    @Resource
+    private SetmealDishService setmealDishService;
 
     /**
      * 新增菜品
@@ -146,5 +153,39 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         DishVO dishVO = dishMapper.selectByIdWithFlavor(id);
         log.info("查询到的菜品信息为：{}", dishVO);
         return dishVO;
+    }
+
+    @Override
+    @Transactional
+    public void removeBatch(List<Long> ids) {
+        List<Dish> dishList = dishMapper.selectBatchIds(ids);
+        dishList.forEach(dish -> {
+            // 起售中的菜品无法删除
+            if (dish.getStatus() == 1) {
+                throw new BaseException("起售中的菜品无法删除！");
+            }
+        });
+        // 被套餐关联的菜品无法删除
+        List<SetmealDish> setmealDishList = setmealDishService.lambdaQuery()
+                .in(SetmealDish::getDishId, ids)
+                .list();
+        if (setmealDishList != null && !setmealDishList.isEmpty()) {
+            throw new BaseException("被套餐关联的菜品无法删除！");
+        }
+
+        ids.forEach(id -> {
+            Dish dish = dishMapper.selectById(id);
+            dishMapper.deleteById(id);
+
+
+            // 删除关联的口味数据
+            List<DishFlavor> list = dishFlavorService.lambdaQuery()
+                    .eq(DishFlavor::getDishId, id)
+                    .list();
+            if (list != null && !list.isEmpty()) {
+                dishFlavorService
+                        .remove(new LambdaUpdateWrapper<DishFlavor>().eq(DishFlavor::getDishId, id));
+            }
+        });
     }
 }

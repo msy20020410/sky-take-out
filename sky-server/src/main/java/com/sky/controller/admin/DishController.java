@@ -81,4 +81,16 @@ public class DishController {
         DishVO dishVO = dishService.getByIdWithFlavor(id);
         return Result.success(dishVO);
     }
+
+    /**
+     * 批量删除菜品
+     *
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    public Result delete(@RequestParam List<Long> ids) {
+        dishService.removeBatch(ids);
+        return Result.success("操作成功！");
+    }
 }
