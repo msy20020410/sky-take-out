@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
@@ -9,6 +10,8 @@ import com.sky.result.Result;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
 import io.swagger.annotations.Api;
+import javassist.runtime.Desc;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -43,9 +46,39 @@ public class DishController {
     }
 
 
+    /**
+     * 菜品分页查询
+     *
+     * @param dto
+     * @return
+     */
     @GetMapping("/page")
     public Result<PageResult> page(DishPageQueryDTO dto) {
         PageResult pageResult = dishService.pageQuery(dto);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 修改菜品
+     *
+     * @param dto
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody DishDTO dto) {
+        dishService.updateDishWithFlavor(dto);
+        return Result.success("操作成功！");
+    }
+
+    /**
+     * 根据id查询菜品
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result<DishVO> getById(@PathVariable Long id) {
+        DishVO dishVO = dishService.getByIdWithFlavor(id);
+        return Result.success(dishVO);
     }
 }

@@ -2,6 +2,7 @@ package com.sky.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sky.dto.DishDTO;
@@ -16,6 +17,7 @@ import com.sky.service.CategoryService;
 import com.sky.service.DishFlavorService;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,7 @@ import java.util.List;
  * @Description
  */
 @Service
+@Slf4j
 public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements DishService {
 
     @Resource
@@ -118,5 +121,30 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
                 .total(dishPage.getTotal())
                 .records(res)
                 .build();
+    }
+
+    @Override
+    public void updateDishWithFlavor(DishDTO dto) {
+        // 更新菜品
+        Dish dish = new Dish();
+        BeanUtil.copyProperties(dto, dish);
+        dishMapper.updateById(dish);
+        // 更新菜品口味
+        List<DishFlavor> flavors = dto.getFlavors();
+        flavors.forEach(flavor -> {
+            dishFlavorService.lambdaUpdate()
+                    .eq(flavor.getDishId() != null, DishFlavor::getId, flavor.getDishId())
+                    .eq(flavor.getId() != null, DishFlavor::getId, flavor.getId())
+                    .set(DishFlavor::getName, flavor.getName())
+                    .set(DishFlavor::getValue, flavor.getValue())
+                    .update();
+        });
+    }
+
+    @Override
+    public DishVO getByIdWithFlavor(Long id) {
+        DishVO dishVO = dishMapper.selectByIdWithFlavor(id);
+        log.info("查询到的菜品信息为：{}", dishVO);
+        return dishVO;
     }
 }

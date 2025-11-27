@@ -20,4 +20,8 @@ public interface DishService extends IService<Dish> {
     void addWithFlavor(DishDTO dto);
 
     PageResult pageQuery(DishPageQueryDTO dto);
+
+    void updateDishWithFlavor(DishDTO dto);
+
+    DishVO getByIdWithFlavor(Long id);
 }
