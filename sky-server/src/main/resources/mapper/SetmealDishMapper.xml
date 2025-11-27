@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.mapper.SetmealDishMapper">
+  <resultMap id="BaseResultMap" type="com.sky.entity.SetmealDish">
+    <!--@mbg.generated-->
+    <!--@Table setmeal_dish-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="setmeal_id" jdbcType="BIGINT" property="setmealId" />
+    <result column="dish_id" jdbcType="BIGINT" property="dishId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+    <result column="copies" jdbcType="INTEGER" property="copies" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, setmeal_id, dish_id, `name`, price, copies
+  </sql>
+</mapper>
