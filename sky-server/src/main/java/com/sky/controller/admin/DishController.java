@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sky.dto.DishDTO;
@@ -7,10 +8,12 @@ import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
+import com.sky.service.CategoryService;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
 import io.swagger.annotations.Api;
 import javassist.runtime.Desc;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,8 @@ public class DishController {
 
     @Resource
     private DishService dishService;
+    @Autowired
+    private CategoryService categoryService;
 
 
     /**
@@ -92,5 +97,14 @@ public class DishController {
     public Result delete(@RequestParam List<Long> ids) {
         dishService.removeBatch(ids);
         return Result.success("操作成功！");
+    }
+
+
+    @GetMapping("/list")
+    public Result<List<Dish>> list(String categoryId) {
+        List<Dish> list = dishService.lambdaQuery()
+                .eq(Dish::getCategoryId, categoryId)
+                .list();
+        return Result.success(list);
     }
 }
