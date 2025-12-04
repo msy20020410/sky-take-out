@@ -100,11 +100,33 @@ public class DishController {
     }
 
 
+    /**
+     * 获取指定分类下的菜品
+     *
+     * @param categoryId
+     * @return
+     */
     @GetMapping("/list")
     public Result<List<Dish>> list(String categoryId) {
         List<Dish> list = dishService.lambdaQuery()
                 .eq(Dish::getCategoryId, categoryId)
                 .list();
         return Result.success(list);
+    }
+
+    /**
+     * 菜品起售停售
+     *
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    public Result startOrStop(@PathVariable Integer status, Long id) {
+        dishService.lambdaUpdate()
+                .eq(Dish::getId, id)
+                .set(Dish::getStatus, status)
+                .update();
+        return Result.success("操作成功！");
     }
 }
